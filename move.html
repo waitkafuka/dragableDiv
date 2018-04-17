@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    .wrap {
+        width: 400px;
+        height: 400px;
+        border: 1px solid #e6e6e6;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        display: none;
+    }
+
+    .title {
+        height: 50px;
+        cursor: move;
+        background: #e6e6e6;
+    }
+
+    .container {
+        height: 3000px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="wrap">
+            <div class="title"></div>
+        </div>
+        <button id="msg-box-btn" style="position: fixed;top:0;">弹窗</button>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/1.12.1/jquery.js"></script>
+    <script type="text/javascript">
+    
+    var debug = false;
+    //兼容IE8的日志
+    window.console = window.console||{
+        log:function(){
+
+        }
+    }
+    //关闭调试信息
+    function closeDebug(){
+        console.log = function(){}
+    }
+    !debug && closeDebug();
+    //弹窗初始化位置
+    var boxLeft = 0;
+    var boxTop = 0;
+    //因为弹窗事先是隐藏的，需要在显示之后才可以获取到初始位置
+    $("#msg-box-btn").click(function() {
+        $('.wrap').show(0, function() {
+            boxLeft = $('.wrap').offset().left;
+            boxTop = $('.wrap').offset().top - $(window).scrollTop();
+        });
+        console.log('弹窗初始化位置：', boxLeft, boxTop);
+    })
+    //鼠标刚点击下去时候的鼠标指针位置
+    var pointerPositionInitX = 0;
+    var pointerPositionInitY = 0;
+    //鼠标移动的时候可以拖动，但不是一直可以拖动，只在“鼠标按下”-->"鼠标松开"这段时间之间才可以拖动
+    var canMove = false;
+    $(function() {
+        $('.title').on('mousedown', function(e) {
+            //鼠标刚点击下去的时候，给鼠标指针坐标位置赋值
+            pointerPositionInitX = e.clientX;
+            pointerPositionInitY = e.clientY;
+            console.log('点击下去的时候鼠标指针坐标', pointerPositionInitX, pointerPositionInitY)
+            canMove = true;
+        })
+        $(document).on('mousemove', function(e) {
+            if (canMove) {
+                console.log('移动的时候坐标，boxLeft:', boxLeft, "鼠标指针当前位置:", e.clientX, "pointerPositionInitX:", pointerPositionInitX);
+                $('.wrap').css({
+                    //计算方式为：窗体原来位置+（鼠标移动的距离）
+                    "margin-left": boxLeft + (e.clientX - pointerPositionInitX),
+                    "margin-top": boxTop + (e.clientY - pointerPositionInitY)
+                });
+            }
+
+        })
+        $(document).on('mouseup', function(e) {
+            //鼠标松开的时候，做一些初始化。此时移动鼠标窗体不可再移动
+            canMove = false;
+            //窗体的位置已经变化，需要重新赋值
+            boxLeft = $('.wrap').offset().left;
+            boxTop = $('.wrap').offset().top - $(window).scrollTop();
+            console.log("弹起的时候坐标:", boxLeft, boxTop);
+        })
+    })
+    </script>
+</body>
+
+</html>
