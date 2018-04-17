@@ -44,27 +44,27 @@
     </div>
     <script src="https://cdn.bootcss.com/jquery/1.12.1/jquery.js"></script>
     <script type="text/javascript">
-    
     var debug = false;
     //兼容IE8的日志
-    window.console = window.console||{
-        log:function(){
+    window.console = window.console || {
+        log: function() {
 
         }
     }
     //关闭调试信息
-    function closeDebug(){
-        console.log = function(){}
-    }
-    !debug && closeDebug();
+    function closeDebug() {
+        console.log = function() {}
+    }!debug && closeDebug();
     //弹窗初始化位置
     var boxLeft = 0;
     var boxTop = 0;
+    var maxMarginLeft = 0;
     //因为弹窗事先是隐藏的，需要在显示之后才可以获取到初始位置
     $("#msg-box-btn").click(function() {
         $('.wrap').show(0, function() {
             boxLeft = $('.wrap').offset().left;
             boxTop = $('.wrap').offset().top - $(window).scrollTop();
+            maxMarginLeft = $(window).width() - $('.wrap').width();
         });
         console.log('弹窗初始化位置：', boxLeft, boxTop);
     })
@@ -83,14 +83,16 @@
         })
         $(document).on('mousemove', function(e) {
             if (canMove) {
-                console.log('移动的时候坐标，boxLeft:', boxLeft, "鼠标指针当前位置:", e.clientX, "pointerPositionInitX:", pointerPositionInitX);
+                var marginLeft = boxLeft + (e.clientX - pointerPositionInitX);
+                var marginTop = boxTop + (e.clientY - pointerPositionInitY);
+                marginLeft = marginLeft > maxMarginLeft ? maxMarginLeft : marginLeft;
                 $('.wrap').css({
                     //计算方式为：窗体原来位置+（鼠标移动的距离）
-                    "margin-left": boxLeft + (e.clientX - pointerPositionInitX),
-                    "margin-top": boxTop + (e.clientY - pointerPositionInitY)
+                    "margin-left": marginLeft > 0 ? marginLeft : 0,
+                    "margin-top": marginTop > 0 ? marginTop : 0
                 });
+                console.log('移动的时候坐标，boxLeft:', boxLeft, "鼠标指针当前位置:", e.clientX, "pointerPositionInitX:", pointerPositionInitX);
             }
-
         })
         $(document).on('mouseup', function(e) {
             //鼠标松开的时候，做一些初始化。此时移动鼠标窗体不可再移动
